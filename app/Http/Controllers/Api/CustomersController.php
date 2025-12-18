@@ -8,11 +8,18 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\Customers;
 
+use App\Repositories\Contracts\CustomersRepositoryInterface;
+
 class CustomersController extends Controller
 {
+    public function __construct(protected CustomersRepositoryInterface $customersRepository)
+    {
+        $this->customersRepository = $customersRepository;
+    }
+
     public function index()
     {
-        $customers = Customers::all();
+        $customers = $this->customersRepository->getAll();
 
         if ($customers->isEmpty()) {
             $data = [
@@ -36,7 +43,7 @@ class CustomersController extends Controller
 
     public function show($id)
     {
-        $customer = Customers::find($id);
+        $customer = $this->customersRepository->findById($id);
 
         if (!$customer) {
             $data = [
@@ -80,7 +87,7 @@ class CustomersController extends Controller
             return response()->json($data, 422);
         }
 
-        $customer = Customers::create([
+        $customer = $this->customersRepository->create([
             'name' => $request->name,
             'number_id' => $request->number_id,
             'phone' => $request->phone,
@@ -111,7 +118,7 @@ class CustomersController extends Controller
 
     public function destroy($id)
     {
-        $customer = Customers::find($id);
+        $customer = $this->customersRepository->findById($id);
 
         if (!$customer) {
             $data = [
@@ -123,7 +130,7 @@ class CustomersController extends Controller
             return response()->json($data, 404);
         }
 
-        $customer->delete();
+        $this->customersRepository->delete($id);
 
         $data = [
             'message' => 'Customer deleted successfully.',
@@ -136,7 +143,7 @@ class CustomersController extends Controller
 
     public function update(Request $request, $id)
     {
-        $customer = Customers::find($id);
+        $customer = $this->customersRepository->findById($id);
 
         if (!$customer) {
             $data = [
@@ -175,7 +182,7 @@ class CustomersController extends Controller
         $customer->payment_classification = $request->payment_classification;
         $customer->status = $request->status;
 
-        $customer->save();
+        $this->customersRepository->update($id, $request->all());
 
         $data = [
             'message' => 'Customer updated successfully.',
@@ -189,7 +196,7 @@ class CustomersController extends Controller
 
     public function updatePartial(Request $request, $id)
     {
-        $customer = Customers::find($id);
+        $customer = $this->customersRepository->findById($id);
 
         if (!$customer) {
             $data = [
@@ -240,7 +247,7 @@ class CustomersController extends Controller
             $customer->status = $request->status;
         }
 
-        $customer->save();
+        $this->customersRepository->updatePartial($id, $request->all());
 
         $data = [
             'message' => 'Customer updated successfully.',
