@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class CustomersRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class CustomersRequest extends FormRequest
 
         return [
             'name' => ['required', 'max:255'],
-            'number_id' => ['required', 'max:9', 'unique:customers,number_id,' . $customerId],
+            'number_id' => ['required', 'max:9', Rule::unique('customers', 'number_id')->ignore($customerId)],
             'phone' => ['required', 'between:11,14'],
             'address' => 'required',
             'payment_classification' => ['required', 'in:GOOD,REGULAR,BAD'],
