@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 use App\Models\Customers;
-
 use App\Repositories\Contracts\CustomersRepositoryInterface;
+use App\Http\Requests\CustomersRequest;
+use App\Http\Resources\CustomersResource;
 
 class CustomersController extends Controller
 {
@@ -23,7 +24,7 @@ class CustomersController extends Controller
 
         if ($customers->isEmpty()) {
             $data = [
-                'message' => 'No customers found.',
+                'message' => 'No se encontraron clientes.',
                 'error' => true,
                 'status' => 404
             ];
@@ -31,14 +32,7 @@ class CustomersController extends Controller
             return response()->json($data, 404);
         }
 
-        $data = [
-            'message' => 'Customers retrieved successfully.',
-            'customers' => $customers,
-            'error' => false,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return CustomersResource::collection($customers);
     }
 
     public function show($id)
@@ -47,7 +41,7 @@ class CustomersController extends Controller
 
         if (!$customer) {
             $data = [
-                'message' => 'No customer found.',
+                'message' => 'No se encontro el cliente.',
                 'error' => true,
                 'status' => 404
             ];
@@ -55,50 +49,16 @@ class CustomersController extends Controller
             return response()->json($data, 404);
         }
 
-        $data = [
-            'message' => 'Customer retrieved successfully.',
-            'customer' => $customer,
-            'error' => false,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return CustomersResource::make($customer);
     }
 
-    public function store(Request $request)
+    public function store(CustomersRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:255'],
-            'number_id' => ['required', 'max:9'],
-            'phone' => ['required', 'between:11,14'],
-            'address' => 'required',
-            'payment_classification' => ['required', 'in:GOOD,REGULAR,BAD'],
-            'status' => ['required', 'in:ACTIVE,INACTIVE']
-        ]);
-
-        if ($validator->fails()) {
-            $data = [
-                'message' => 'Validation errors',
-                'errors' => $validator->errors(),
-                'error' => true,
-                'status' => 422
-            ];
-
-            return response()->json($data, 422);
-        }
-
-        $customer = $this->customersRepository->create([
-            'name' => $request->name,
-            'number_id' => $request->number_id,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'payment_classification' => $request->payment_classification,
-            'status' => $request->status,
-        ]);
+        $customer = $this->customersRepository->create($request->validated());
 
         if (!$customer) {
             $data = [
-                'message' => 'Failed to create customer.',
+                'message' => 'Error al crear el cliente.',
                 'error' => true,
                 'status' => 500
             ];
@@ -106,14 +66,14 @@ class CustomersController extends Controller
             return response()->json($data, 500);
         }
 
-        $data = [
-            'message' => 'Customer created successfully.',
-            'customer' => $customer,
-            'error' => false,
-            'status' => 201
-        ];
-
-        return response()->json($data, 201);
+        return (new CustomersResource($customer))
+            ->additional([
+                'message' => 'Cliente creado exitosamente.',
+                'error' => false,
+                'status' => 201
+            ])
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function destroy($id)
@@ -122,7 +82,7 @@ class CustomersController extends Controller
 
         if (!$customer) {
             $data = [
-                'message' => 'No customer found.',
+                'message' => 'No se encontro el cliente.',
                 'error' => true,
                 'status' => 404
             ];
@@ -133,7 +93,7 @@ class CustomersController extends Controller
         $this->customersRepository->delete($id);
 
         $data = [
-            'message' => 'Customer deleted successfully.',
+            'message' => 'Cliente eliminado exitosamente.',
             'error' => false,
             'status' => 200
         ];
@@ -141,13 +101,13 @@ class CustomersController extends Controller
         return response()->json($data, 200);
     }
 
-    public function update(Request $request, $id)
+    public function update(CustomersRequest $request, $id)
     {
         $customer = $this->customersRepository->findById($id);
 
         if (!$customer) {
             $data = [
-                'message' => 'No customer found.',
+                'message' => 'No se encontro el cliente.',
                 'error' => true,
                 'status' => 404
             ];
@@ -155,43 +115,16 @@ class CustomersController extends Controller
             return response()->json($data, 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:255'],
-            'number_id' => ['required', 'max:9'],
-            'phone' => ['required', 'between:11,14'],
-            'address' => 'required',
-            'payment_classification' => ['required', 'in:GOOD,REGULAR,BAD'],
-            'status' => ['required', 'in:ACTIVE,INACTIVE']
-        ]);
+        $updatedCustomer = $this->customersRepository->update($id, $request->validated());
 
-        if ($validator->fails()) {
-            $data = [
-                'message' => 'Validation errors',
-                'errors' => $validator->errors(),
-                'error' => true,
-                'status' => 422
-            ];
-
-            return response()->json($data, 422);
-        }
-
-        $customer->name = $request->name;
-        $customer->number_id = $request->number_id;
-        $customer->phone = $request->phone;
-        $customer->address = $request->address;
-        $customer->payment_classification = $request->payment_classification;
-        $customer->status = $request->status;
-
-        $this->customersRepository->update($id, $request->all());
-
-        $data = [
-            'message' => 'Customer updated successfully.',
-            'customer' => $customer,
-            'error' => false,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return (new CustomersResource($updatedCustomer))
+            ->additional([
+                'message' => 'Cliente editado exitosamente.',
+                'error' => false,
+                'status' => 200
+            ])
+            ->response()
+            ->setStatusCode(200);
     }
 
     public function updatePartial(Request $request, $id)
@@ -200,7 +133,7 @@ class CustomersController extends Controller
 
         if (!$customer) {
             $data = [
-                'message' => 'No customer found.',
+                'message' => 'No se encontro el cliente.',
                 'error' => true,
                 'status' => 404
             ];
@@ -250,7 +183,7 @@ class CustomersController extends Controller
         $this->customersRepository->updatePartial($id, $request->all());
 
         $data = [
-            'message' => 'Customer updated successfully.',
+            'message' => 'Cliente editado exitosamente.',
             'customer' => $customer,
             'error' => false,
             'status' => 200
