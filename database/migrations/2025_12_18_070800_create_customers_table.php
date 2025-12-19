@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('number_id');
+            $table->string('number_id');
             $table->string('phone');
             $table->text('address');
             $table->enum('payment_classification', ['GOOD','REGULAR','BAD'])->default('REGULAR');
