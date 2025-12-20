@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->constrained('customers')->onUpdate('cascade')->onDelete('cascade');
             $table->float('principal_amount', 10, 2);
             $table->smallInteger('interest_rate');
             $table->smallInteger('payment_term');
