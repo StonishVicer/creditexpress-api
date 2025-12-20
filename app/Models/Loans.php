@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Loans extends Model
 {
@@ -18,4 +19,9 @@ class Loans extends Model
         'number_installments',
         'interest_to_collect',
     ];
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customers::class);
+    }
 }
