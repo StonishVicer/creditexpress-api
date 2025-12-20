@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Customers extends Model
 {
@@ -19,4 +20,9 @@ class Customers extends Model
         'payment_classification',
         'status',
     ];
+
+    public function loan(): BelongsTo
+    {
+        return $this->belongsTo(Loans::class);
+    }
 }
