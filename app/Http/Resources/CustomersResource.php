@@ -13,8 +13,10 @@ class CustomersResource extends JsonResource
             'id' => $this->id,
             'nombre' => $this->name,
             'cedula' => $this->number_id,
-            'telefono' => $this->phone,
-            'direccion' => $this->address,
+            'contacto' => [
+                'telefono' => $this->phone,
+                'direccion' => $this->address
+            ],
             'clasificacion_de_pago' => $this->payment_classification,
             'estado' => $this->status,
         ];
