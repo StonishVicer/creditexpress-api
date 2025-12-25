@@ -19,6 +19,7 @@ return new class extends Migration
             $table->smallInteger('payment_term');
             $table->smallInteger('number_installments');
             $table->float('interest_to_collect', 10, 2);
+            $table->foreignId('loan_status_id')->constrained('loans_status')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }
