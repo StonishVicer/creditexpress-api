@@ -24,4 +24,9 @@ class Loans extends Model
     {
         return $this->hasMany(Customers::class);
     }
+
+    public function loansStatus(): HasMany
+    {
+        return $this->hasMany(LoansStatus::class);
+    }
 }
