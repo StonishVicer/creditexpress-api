@@ -4,20 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class LoansStatus extends Model
+class LoanStatus extends Model
 {
     use HasFactory;
 
-    protected $table = 'loans_status';
+    protected $table = 'loan_statuses';
 
     protected $fillable = [
         'name_status',
     ];
 
-    public function loan(): BelongsTo
+    public function loans(): HasMany
     {
-        return $this->belongsTo(Loans::class);
+        return $this->hasMany(Loan::class);
     }
 }

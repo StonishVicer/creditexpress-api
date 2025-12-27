@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class LoansRequest extends FormRequest
+class LoanRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,12 +16,16 @@ class LoansRequest extends FormRequest
 
     public function rules(): array
     {
+        $presenceRule = $this->isMethod('PATCH') ? 'sometimes' : 'required';
+    
         return [
-            'principal_amount' => ['required', 'numeric', 'min:0'],
-            'interest_rate' => ['required', 'numeric', 'min:10', 'max:12'],
-            'payment_term' => ['required', 'integer', 'min:3', 'max:6'],
-            'number_installments' => ['required', 'integer', 'min:3', 'max:6'],
-            'interest_to_collect' => ['required', 'numeric', 'min:0'],
+            'customer_id'         => [$presenceRule, 'exists:customers,id'], // Crítico para tests
+            'loan_status_id'      => [$presenceRule, 'exists:loan_statuses,id'], // Crítico para tests
+            'principal_amount'    => [$presenceRule, 'numeric', 'min:0'],
+            'interest_rate'       => [$presenceRule, 'numeric', 'min:10', 'max:12'],
+            'payment_term'        => [$presenceRule, 'integer', 'min:3', 'max:6'],
+            'number_installments' => [$presenceRule, 'integer', 'min:3', 'max:6'],
+            'interest_to_collect' => [$presenceRule, 'numeric', 'min:0'],
         ];
     }
 

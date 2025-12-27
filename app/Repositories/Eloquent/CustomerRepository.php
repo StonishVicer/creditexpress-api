@@ -2,32 +2,32 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Customers;
-use App\Repositories\Contracts\CustomersRepositoryInterface;
+use App\Models\Customer;
+use App\Repositories\Contracts\CustomerRepositoryInterface;
 
-class CustomersRepository implements CustomersRepositoryInterface
+class CustomerRepository implements CustomerRepositoryInterface
 {
-    public function __construct(protected Customers $customers)
+    public function __construct(protected Customer $customer)
     {}
 
     public function getAll()
     {
-        return $this->customers->all();
+        return $this->customer->all();
     }
 
     public function findById($id)
     {
-        return $this->customers->find($id);
+        return $this->customer->find($id);
     }
 
     public function create(array $data)
     {
-        return $this->customers->create($data);
+        return $this->customer->create($data);
     }
 
     public function delete($id)
     {
-        $customer = $this->customers->find($id);
+        $customer = $this->customer->find($id);
         if ($customer) {
             return $customer->delete();
         }
@@ -35,7 +35,7 @@ class CustomersRepository implements CustomersRepositoryInterface
 
     public function update($id, array $data)
     {
-        $customer = $this->customers->find($id);
+        $customer = $this->customer->find($id);
         if ($customer) {
             $customer->update($data);
             return $customer;
@@ -44,7 +44,7 @@ class CustomersRepository implements CustomersRepositoryInterface
 
     public function updatePartial($id, array $data)
     {
-        $customer = $this->customers->find($id);
+        $customer = $this->customer->find($id);
         if ($customer) {
             $customer->fill($data);
             $customer->save();

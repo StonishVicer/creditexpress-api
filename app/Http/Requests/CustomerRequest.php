@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class CustomersRequest extends FormRequest
+class CustomerRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,14 +17,21 @@ class CustomersRequest extends FormRequest
     public function rules(): array
     {
         $customerId = $this->route('id');
-
+        
+        // Si es PATCH, usamos 'sometimes'. Si es POST o PUT, usamos 'required'.
+        $presenceRule = $this->isMethod('PATCH') ? 'sometimes' : 'required';
+    
         return [
-            'name' => ['required', 'max:255'],
-            'number_id' => ['required', 'max:9', Rule::unique('customers', 'number_id')->ignore($customerId)],
-            'phone' => ['required', 'between:11,14'],
-            'address' => 'required',
-            'payment_classification' => ['required', 'in:GOOD,REGULAR,BAD'],
-            'status' => ['required', 'in:ACTIVE,INACTIVE']
+            'name' => [$presenceRule, 'max:255'],
+            'number_id' => [
+                $presenceRule, 
+                'max:9', 
+                Rule::unique('customers', 'number_id')->ignore($customerId)
+            ],
+            'phone' => [$presenceRule, 'between:11,14'],
+            'address' => [$presenceRule],
+            'payment_classification' => [$presenceRule, 'in:GOOD,REGULAR,BAD'],
+            'status' => [$presenceRule, 'in:ACTIVE,INACTIVE']
         ];
     }
 

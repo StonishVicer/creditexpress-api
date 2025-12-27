@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
-interface LoansRepositoryInterface
+interface LoanRepositoryInterface
 {
     public function getAll();
     public function findById($id);
