@@ -7,24 +7,14 @@ use App\Repositories\Contracts\CustomerRepositoryInterface;
 
 class CustomerRepository implements CustomerRepositoryInterface
 {
-    public function __construct(protected Customer $customer)
-    {}
+    public function __construct(protected Customer $customer){}
 
-    public function getAll()
-    {
-        return $this->customer->all();
-    }
+    public function getAll(){ return $this->customer->all(); }  
 
-    public function findById($id)
-    {
-        return $this->customer->find($id);
-    }
+    public function findById($id){  return $this->customer->find($id);  }
 
-    public function create(array $data)
-    {
-        return $this->customer->create($data);
-    }
-
+    public function create(array $data){ return $this->customer->create($data); }    
+    
     public function delete($id)
     {
         $customer = $this->customer->find($id);
@@ -38,16 +28,6 @@ class CustomerRepository implements CustomerRepositoryInterface
         $customer = $this->customer->find($id);
         if ($customer) {
             $customer->update($data);
-            return $customer;
-        }
-    }
-
-    public function updatePartial($id, array $data)
-    {
-        $customer = $this->customer->find($id);
-        if ($customer) {
-            $customer->fill($data);
-            $customer->save();
             return $customer;
         }
     }

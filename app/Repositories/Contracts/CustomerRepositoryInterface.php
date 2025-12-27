@@ -9,5 +9,4 @@ interface CustomerRepositoryInterface
     public function create(array $data);
     public function delete($id);
     public function update($id, array $data);
-    public function updatePartial($id, array $data);
 }

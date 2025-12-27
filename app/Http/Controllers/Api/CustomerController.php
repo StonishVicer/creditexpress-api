@@ -10,120 +10,56 @@ use Illuminate\Http\JsonResponse;
 
 class CustomerController extends Controller
 {
-    public function __construct(protected CustomerRepositoryInterface $customerRepository)
-    {}
+    public function __construct(protected CustomerRepositoryInterface $customerRepository) {}
 
-    public function index(): \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function index(): JsonResponse | \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
         $customers = $this->customerRepository->getAll();
 
-        if ($customers->isEmpty()) {
-            return response()->json([
-                'message' => 'No se encontraron clientes.',
-                'error' => true,
-                'status' => 404
-            ], 404);
-        }
-
-        return CustomerResource::collection($customers);
+        return $customers->isEmpty() 
+            ? response()->json(['message' => 'No se encontraron clientes.', 'error' => true], 404)
+            : response()->json(CustomerResource::collection($customers));
     }
 
-    public function show($id): JsonResponse|CustomerResource
+    public function show($id): JsonResponse
     {
         $customer = $this->customerRepository->findById($id);
 
-        if (!$customer) {
-            return response()->json([
-                'message' => 'No se encontro el cliente.',
-                'error' => true,
-                'status' => 404
-            ], 404);
-        }
-
-        return CustomerResource::make($customer);
+        return $customer 
+            ? response()->json(CustomerResource::make($customer))
+            : response()->json(['message' => 'No se encontró el cliente.', 'error' => true], 404);
     }
 
-    public function store(CustomerRequest $request): \Illuminate\Http\JsonResponse
+    public function store(CustomerRequest $request): JsonResponse
     {
         $customer = $this->customerRepository->create($request->validated());
  
         return response()->json([
             'data' => new CustomerResource($customer),
-            'additional' => [
-                'message' => 'Cliente creado exitosamente.',
-                'error' => false,
-                'status' => 201
-            ]
+            'additional' => ['message' => 'Cliente creado exitosamente.', 'error' => false, 'status' => 201]
         ], 201);
     }
 
     public function update(CustomerRequest $request, $id): JsonResponse
     {
-        $customer = $this->customerRepository->findById($id);
+        $customer = $this->customerRepository->update($id, $request->validated());
 
         if (!$customer) {
-            return response()->json([
-                'message' => 'No se encontro el cliente.',
-                'error' => true,
-                'status' => 404
-            ], 404);
+            return response()->json(['message' => 'No se encontró el cliente.', 'error' => true], 404);
         }
 
-        $updatedCustomer = $this->customerRepository->update($id, $request->validated());
-
-        return (new CustomerResource($updatedCustomer))
-            ->additional([
-                'message' => 'Cliente editado exitosamente.',
-                'error' => false,
-                'status' => 200
-            ])
-            ->response()
-            ->setStatusCode(200);
-    }
-
-    public function updatePartial(CustomerRequest $request, $id): JsonResponse
-    {
-        $customer = $this->customerRepository->findById($id);
-
-        if (!$customer) {
-            return response()->json([
-                'message' => 'No se encontro el cliente.',
-                'error' => true,
-                'status' => 404
-            ], 404);
-        }
-
-        // Al usar CustomerRequest, los datos ya vienen validados (con 'sometimes' para PATCH)
-        $updatedCustomer = $this->customerRepository->updatePartial($id, $request->validated());
-
-        return (new CustomerResource($updatedCustomer))
-            ->additional([
-                'message' => 'Cliente editado exitosamente.',
-                'error' => false,
-                'status' => 200
-            ])
-            ->response()
-            ->setStatusCode(200);
+        return response()->json([
+            'data' => new CustomerResource($customer),
+            'additional' => ['message' => 'Cliente editado exitosamente.', 'error' => false, 'status' => 200]
+        ], 200);
     }
 
     public function destroy($id): JsonResponse
     {
-        $customer = $this->customerRepository->findById($id);
+        $deleted = $this->customerRepository->delete($id);
 
-        if (!$customer) {
-            return response()->json([
-                'message' => 'No se encontro el cliente.',
-                'error' => true,
-                'status' => 404
-            ], 404);
-        }
-
-        $this->customerRepository->delete($id);
-
-        return response()->json([
-            'message' => 'Cliente eliminado exitosamente.',
-            'error' => false,
-            'status' => 200
-        ], 200);
+        return $deleted 
+            ? response()->json(['message' => 'Cliente eliminado exitosamente.', 'error' => false, 'status' => 200], 200)
+            : response()->json(['message' => 'No se encontró el cliente.', 'error' => true, 'status' => 404], 404);
     }
 }

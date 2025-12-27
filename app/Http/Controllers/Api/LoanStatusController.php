@@ -3,101 +3,64 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\LoanStatus;
 use App\Repositories\Contracts\LoanStatusRepositoryInterface;
 use App\Http\Requests\Loan\LoanStatusRequest;
 use App\Http\Resources\LoanStatusResource;
+use Illuminate\Http\JsonResponse;
 
 class LoanStatusController extends Controller
 {
-    public function __construct(protected LoanStatusRepositoryInterface $loanStatusRepository)
+    // PHP 8+: "protected LoanStatusRepositoryInterface $loanStatusRepository" en el constructor ya hace la asignación automáticamente.
+    public function __construct(protected LoanStatusRepositoryInterface $loanStatusRepository) {}
+
+    public function index(): JsonResponse
     {
-        $this->loanStatusRepository = $loanStatusRepository;
+        $statuses = $this->loanStatusRepository->getAll();
+
+        return $statuses->isEmpty() 
+            ? response()->json(['message' => 'No se encontraron estados.', 'error' => true], 404)
+            : response()->json(LoanStatusResource::collection($statuses));
     }
 
-    public function index()
+    public function show($id): JsonResponse
     {
-        $loan_status = $this->loanStatusRepository->getAll();
+        $status = $this->loanStatusRepository->findById($id);
 
-        if ($loan_status->isEmpty()) {
-            $data = [
-                'message' => 'No se encontraron estados de prestamos.',
-                'error' => true,
-                'status' => 404
-            ];
-
-            return response()->json($data, 404);
-        }
-
-        return LoanStatusResource::collection($loan_status);
+        return $status 
+            ? response()->json(LoanStatusResource::make($status))
+            : response()->json(['message' => 'Estado no encontrado.', 'error' => true], 404);
     }
 
-    public function show($id)
+    public function store(LoanStatusRequest $request): JsonResponse
     {
-        $loan_status = $this->loanStatusRepository->findById($id);
+        $status = $this->loanStatusRepository->create($request->validated());
 
-        if (!$loan_status) {
-            $data = [
-                'message' => 'Estado de prestamo no encontrado.',
-                'error' => true,
-                'status' => 404
-            ];
-
-            return response()->json($data, 404);
-        }
-
-        return LoanStatusResource::make($loan_status);
-    }
-
-    public function store(LoanStatusRequest $request): \Illuminate\Http\JsonResponse
-    {
-        $loan_status = $this->loanStatusRepository->create($request->validated());
-
-        if (!$loan_status) {
-            return response()->json([
-                'message' => 'Error al crear el estado de prestamo.',
-                'error' => true,
-                'status' => 500
-            ], 500);
-        }
-
-        // Esta es la estructura manual que garantiza el éxito del test
         return response()->json([
-            'data' => new \App\Http\Resources\LoanStatusResource($loan_status),
-            'additional' => [
-                'message' => 'Estado de prestamo creado exitosamente.',
-                'error' => false,
-                'status' => 201
-            ]
+            'data' => new LoanStatusResource($status),
+            'additional' => ['message' => 'Estado creado exitosamente.', 'error' => false, 'status' => 201]
         ], 201);
     }
 
-    public function update(LoanStatusRequest $request, $id) // Usar LoanStatusRequest
-    {
-        $status = $this->loanStatusRepository->findById($id);
+    public function update(LoanStatusRequest $request, $id): JsonResponse
+    {        
+        $status = $this->loanStatusRepository->update($id, $request->validated());
 
         if (!$status) {
-            return response()->json(['message' => 'No encontrado', 'error' => true], 404);
+            return response()->json(['message' => 'Estado no encontrado.', 'error' => true], 404);
         }
 
-        $updated = $this->loanStatusRepository->update($id, $request->validated());
-
-        return (new LoanStatusResource($updated))
-            ->additional(['message' => 'Estado actualizado', 'error' => false, 'status' => 200]);
+        return response()->json([
+            'data' => new LoanStatusResource($status),
+            'additional' => ['message' => 'Estado actualizado exitosamente.', 'error' => false, 'status' => 200]
+        ], 200);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
-        $status = $this->loanStatusRepository->findById($id);
+        $deleted = $this->loanStatusRepository->delete($id);
 
-        if (!$status) {
-            return response()->json(['message' => 'No encontrado', 'error' => true], 404);
-        }
-
-        $this->loanStatusRepository->delete($id);
-
-        return response()->json(['message' => 'Estado eliminado', 'error' => false], 200);
+        return $deleted 
+            ? response()->json(['message' => 'Estado eliminado', 'error' => false], 200)
+            : response()->json(['message' => 'No encontrado', 'error' => true], 404);
     }
 }

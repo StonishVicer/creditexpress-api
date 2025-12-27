@@ -3,22 +3,36 @@
 namespace App\Http\Requests\Loan;
 
 use App\Http\Requests\BaseRequest;
+use Illuminate\Validation\Rule;
 
 class LoanStatusRequest extends BaseRequest
 {
     public function rules(): array
     {
         return [
-            'name_status' => ['required', 'string', 'max:255', 'unique:loan_statuses,name_status']
+            'name_status' => [
+                'required', 
+                'string', 
+                'max:255', 
+                // Permite actualizar el mismo registro sin error de duplicidad
+                Rule::unique('loan_statuses', 'name_status')->ignore($this->route('id'))
+            ]
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name_status.required' => 'El nombre del estado es requerido.',
-            'name_status.unique' => 'Este estado ya se encuentra registrado.',
-            'name_status.max' => 'El nombre es demasiado largo.',
+            'required' => 'El :attribute es requerido.',
+            'unique'   => 'Este :attribute ya se encuentra registrado.',
+            'max'      => 'El :attribute es demasiado largo.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name_status' => 'nombre del estado',
         ];
     }
 }

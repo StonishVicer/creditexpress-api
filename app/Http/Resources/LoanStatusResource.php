@@ -11,7 +11,7 @@ class LoanStatusResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre_estado' => $this->name_status,
+            'name_status' => $this->name_status,
         ];
     }
 }

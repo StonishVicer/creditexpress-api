@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class CustomerTest extends TestCase
 {
-    use RefreshDatabase; // Limpia la base de datos en cada test
+    use RefreshDatabase;
 
     public function test_can_get_all_customers()
     {
@@ -16,8 +16,9 @@ class CustomerTest extends TestCase
 
         $response = $this->getJson('/api/customers');
 
+        // Nota: Asegúrate de que CustomerResource devuelva una colección envuelta en 'data'
         $response->assertStatus(200)
-                 ->assertJsonCount(3, 'data');
+                 ->assertJsonCount(3);
     }
 
     public function test_can_create_customer()
@@ -43,25 +44,32 @@ class CustomerTest extends TestCase
     {
         $customer = Customer::factory()->create();
 
-        // Enviamos solo el nombre mediante PUT
+        // Enviamos solo el nombre mediante PUT. 
+        // Como quitamos 'sometimes' del Request, esto DEBE fallar.
         $response = $this->putJson("/api/customers/{$customer->id}", [
             'name' => 'Nombre Nuevo'
         ]);
 
-        // Debe fallar con 422 porque falta el resto de campos obligatorios para PUT
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['number_id', 'phone', 'address']);
+                 ->assertJsonValidationErrors(['number_id', 'phone', 'address', 'payment_classification', 'status']);
     }
 
-    public function test_patch_allows_partial_update()
+    public function test_can_update_customer_with_all_fields()
     {
         $customer = Customer::factory()->create(['name' => 'Nombre Original']);
 
-        $response = $this->patchJson("/api/customers/{$customer->id}", [
-            'name' => 'Nombre Editado'
+        $response = $this->putJson("/api/customers/{$customer->id}", [
+            'name' => 'Nombre Editado',
+            'number_id' => $customer->number_id,
+            'phone' => '12345678901',
+            'address' => 'Nueva Direccion',
+            'payment_classification' => 'REGULAR',
+            'status' => 'ACTIVE'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+                 ->assertJsonPath('additional.message', 'Cliente editado exitosamente.');
+
         $this->assertDatabaseHas('customers', [
             'id' => $customer->id,
             'name' => 'Nombre Editado'
