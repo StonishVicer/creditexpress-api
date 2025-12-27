@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
-use App\Http\Requests\CustomerRequest;
+use App\Http\Requests\Customer\CustomerRequest;
 use App\Http\Resources\CustomerResource;
 use Illuminate\Http\JsonResponse;
 
@@ -46,7 +46,7 @@ class CustomerController extends Controller
     public function store(CustomerRequest $request): \Illuminate\Http\JsonResponse
     {
         $customer = $this->customerRepository->create($request->validated());
-    
+ 
         return response()->json([
             'data' => new CustomerResource($customer),
             'additional' => [

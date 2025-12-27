@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Contracts\LoanRepositoryInterface;
-use App\Http\Requests\LoanRequest;
+use App\Http\Requests\Loan\LoanRequest;
 use App\Http\Resources\LoanResource;
 use Illuminate\Http\JsonResponse;
 

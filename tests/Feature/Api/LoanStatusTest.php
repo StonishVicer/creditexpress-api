@@ -10,7 +10,6 @@ class LoanStatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    
     public function test_it_can_list_all_loan_statuses()
     {
         // Creamos 3 estados usando el factory
@@ -27,8 +26,8 @@ class LoanStatusTest extends TestCase
                  ]);
     }
 
-    
-    public function it_can_create_a_new_loan_status()
+    // Se agregó el prefijo test_
+    public function test_it_can_create_a_new_loan_status()
     {
         $data = [
             'name_status' => 'APROBADO'
@@ -43,8 +42,8 @@ class LoanStatusTest extends TestCase
         $this->assertDatabaseHas('loan_statuses', ['name_status' => 'APROBADO']);
     }
 
-    
-    public function it_returns_404_when_status_not_found()
+    // Se agregó el prefijo test_
+    public function test_it_returns_404_when_status_not_found()
     {
         $response = $this->getJson('/api/loan_status/999');
 
@@ -55,8 +54,8 @@ class LoanStatusTest extends TestCase
                  ]);
     }
 
-    
-    public function it_validates_required_name_status()
+    // Se agregó el prefijo test_
+    public function test_it_validates_required_name_status()
     {
         $response = $this->postJson('/api/loan_status', []);
 
