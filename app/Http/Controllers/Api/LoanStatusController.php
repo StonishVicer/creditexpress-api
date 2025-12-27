@@ -9,8 +9,7 @@ use App\Http\Resources\LoanStatusResource;
 use Illuminate\Http\JsonResponse;
 
 class LoanStatusController extends Controller
-{
-    // PHP 8+: "protected LoanStatusRepositoryInterface $loanStatusRepository" en el constructor ya hace la asignación automáticamente.
+{    
     public function __construct(protected LoanStatusRepositoryInterface $loanStatusRepository) {}
 
     public function index(): JsonResponse

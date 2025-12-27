@@ -12,7 +12,7 @@ class CustomerController extends Controller
 {
     public function __construct(protected CustomerRepositoryInterface $customerRepository) {}
 
-    public function index(): JsonResponse | \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function index(): JsonResponse
     {
         $customers = $this->customerRepository->getAll();
 
