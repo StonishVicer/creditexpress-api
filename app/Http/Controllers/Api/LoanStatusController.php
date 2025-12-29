@@ -16,50 +16,62 @@ class LoanStatusController extends Controller
     {
         $statuses = $this->loanStatusRepository->getAll();
 
-        return $statuses->isEmpty() 
-            ? response()->json(['message' => 'No se encontraron estados.', 'error' => true], 404)
-            : response()->json(LoanStatusResource::collection($statuses));
+        if ($statuses->isEmpty()) {
+            return $this->sendError('No se encontraron estados.');
+        }
+
+        return $this->sendResponse(
+            LoanStatusResource::collection($statuses), 
+            'Estados recuperados exitosamente.'
+        );
     }
 
     public function show($id): JsonResponse
     {
         $status = $this->loanStatusRepository->findById($id);
 
-        return $status 
-            ? response()->json(LoanStatusResource::make($status))
-            : response()->json(['message' => 'Estado no encontrado.', 'error' => true], 404);
+        if (!$status) {
+            return $this->sendError('Estado no encontrado.');
+        }
+
+        // Antes: Devolvía el recurso directo
+        return $this->sendResponse(
+            new LoanStatusResource($status), 
+            'Estado recuperado exitosamente.'
+        );
     }
 
     public function store(LoanStatusRequest $request): JsonResponse
     {
         $status = $this->loanStatusRepository->create($request->validated());
 
-        return response()->json([
-            'data' => new LoanStatusResource($status),
-            'additional' => ['message' => 'Estado creado exitosamente.', 'error' => false, 'status' => 201]
-        ], 201);
+        return $this->sendResponse(
+            new LoanStatusResource($status), 
+            'Estado creado exitosamente.', 
+            201
+        );
     }
 
     public function update(LoanStatusRequest $request, $id): JsonResponse
-    {        
+    {
         $status = $this->loanStatusRepository->update($id, $request->validated());
-
+    
         if (!$status) {
-            return response()->json(['message' => 'Estado no encontrado.', 'error' => true], 404);
+            return $this->sendError('Estado no encontrado.');
         }
-
-        return response()->json([
-            'data' => new LoanStatusResource($status),
-            'additional' => ['message' => 'Estado actualizado exitosamente.', 'error' => false, 'status' => 200]
-        ], 200);
+    
+        return $this->sendResponse(
+            new LoanStatusResource($status), 
+            'Estado actualizado exitosamente.'
+        );
     }
 
     public function destroy($id): JsonResponse
     {
-        $deleted = $this->loanStatusRepository->delete($id);
+        if (!$this->loanStatusRepository->delete($id)) {
+            return $this->sendError('Estado no encontrado.');
+        }
 
-        return $deleted 
-            ? response()->json(['message' => 'Estado eliminado', 'error' => false], 200)
-            : response()->json(['message' => 'No encontrado', 'error' => true], 404);
+        return $this->sendDeleteResponse('Estado eliminado exitosamente.');
     }
 }
